@@ -31,8 +31,6 @@ x_axis.set_scroll_strategy('progressive')
 x_axis.set_interval(start=0, end=10000, stop_axis_after=False)
 
 # Function to add a series and corresponding Y-axis to the chart
-
-
 def add_series_and_y_axis(chart, stack_index, title):
     y_axis = chart.add_y_axis(stack_index=stack_index)
     y_axis.set_margins(15 if stack_index > 0 else 0,
@@ -62,8 +60,6 @@ for series in series_list:
     zbc.add_series(series)
 
 # DataBuffer class to manage incoming data
-
-
 class DataBuffer():
     def __init__(self, client_count):
         self.data = []
@@ -97,8 +93,6 @@ class DataBuffer():
         time.sleep(self.sleep_amount)
 
 # Custom client class for handling data stream
-
-
 class MyClient(EasySeedLinkClient):
     def __init__(self, series, name, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -122,8 +116,6 @@ class MyClient(EasySeedLinkClient):
 buffer = DataBuffer(3)
 
 # Function to start a SeedLink client for a specific stream
-
-
 def start_client(network, station, channel, series, name):
     client = MyClient(series, name, 'geofon.gfz-potsdam.de:18000')
     client.select_stream(network, station, channel)
