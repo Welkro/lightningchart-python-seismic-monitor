@@ -31,6 +31,8 @@ x_axis.set_scroll_strategy('progressive')
 x_axis.set_interval(start=0, end=10000, stop_axis_after=False)
 
 # Function to add a series and corresponding Y-axis to the chart
+
+
 def add_series_and_y_axis(chart, stack_index, title):
     y_axis = chart.add_y_axis(stack_index=stack_index)
     y_axis.set_margins(15 if stack_index > 0 else 0,
@@ -42,6 +44,7 @@ def add_series_and_y_axis(chart, stack_index, title):
     series_list.append(series)
     return series
 
+
 # Information for each data stream
 titles = ["East-West", "North-South", "Vertical"]
 channels = ["HHE", "HHN", "HHZ"]
@@ -51,13 +54,16 @@ for i in range(3):
     add_series_and_y_axis(chart, i, titles[i])
 
 # Create Zoom Band Chart attached to the main ChartXY
-zbc = dashboard.ZoomBandChart(chart=chart, column_index=0, row_index=3, row_span=1, axis_type='linear-highPrecision')
+zbc = dashboard.ZoomBandChart(chart=chart, column_index=0,
+                              row_index=3, row_span=1, axis_type='linear-highPrecision')
 
 # Add all series to the Zoom Band Chart
 for series in series_list:
     zbc.add_series(series)
 
 # DataBuffer class to manage incoming data
+
+
 class DataBuffer():
     def __init__(self, client_count):
         self.data = []
@@ -73,16 +79,16 @@ class DataBuffer():
                 client['ys'].extend(ys)
 
     def add_data_to_series(self):
-        if all(client['xs'] and client['ys'] for client in self.data):      # Checks if all clients have at least one data point
+        # Checks if all clients have at least one data point
+        if all(client['xs'] and client['ys'] for client in self.data):
             xs_combined = [client['xs'].pop(0) for client in self.data]
             ys_combined = [client['ys'].pop(0) for client in self.data]
-            
+
             for i, series in enumerate(series_list):
                 series.add([xs_combined[i]], [ys_combined[i]])
 
-        
-        total_data_points = sum(len(client_data['ys']) for client_data in self.data)
-        #print(f"Total data points in buffer: {total_data_points}")     # Debugging method
+        total_data_points = sum(
+            len(client_data['ys']) for client_data in self.data)
 
         if total_data_points > 1000:
             self.sleep_amount = max(0.001, self.sleep_amount * 0.95)
@@ -91,6 +97,8 @@ class DataBuffer():
         time.sleep(self.sleep_amount)
 
 # Custom client class for handling data stream
+
+
 class MyClient(EasySeedLinkClient):
     def __init__(self, series, name, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -101,7 +109,7 @@ class MyClient(EasySeedLinkClient):
     # Override method to handle incoming data
     def on_data(self, trace):
         self.stream += trace
-        
+
         x_values_seconds = trace.times().tolist()
         start_time = trace.stats.starttime.timestamp * 1000
         x_values = [start_time + sec * 1000 for sec in x_values_seconds]
@@ -109,15 +117,19 @@ class MyClient(EasySeedLinkClient):
 
         buffer.receive_data((x_values, y_values), self.name)
 
+
 # Initialize data buffer for 3 clients
 buffer = DataBuffer(3)
 
 # Function to start a SeedLink client for a specific stream
+
+
 def start_client(network, station, channel, series, name):
     client = MyClient(series, name, 'geofon.gfz-potsdam.de:18000')
     client.select_stream(network, station, channel)
     threading.Thread(target=client.run).start()
     return client
+
 
 # List to store the clients
 clients = []
